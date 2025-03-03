@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+<meta name="date" content="2025-02-27" />
+
+<title>modelsummary_rms vignettes</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">modelsummary_rms vignettes</h1>
+<h4 class="date">2025-02-27</h4>
+
+
+
+<p>NOTE DELETE THIS LATER:</p>
+<p>XXXX it is just to make sure the knitted document uses the most
+recent version of rmsMD XXXXX</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">load_all</span>()</span></code></pre></div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>The <strong>modelsummary_rms</strong> function is designed to process
+output from models fitted using the <strong>rms</strong> package and
+generate a summarised dataframe of the results. The goal is to produce
+publication-ready summaries of the models.</p>
+<p>This vignette will guide you through the basic usage of the function
+and then move on to more advanced examples.</p>
+<div id="installation-and-setup" class="section level2">
+<h2>Installation and Setup</h2>
+<p>Make sure you have the required packages installed from CRAN or
+GitHub. Note, if you plan to output the results into Microsoft Word, we
+recommend also installing flextable and officer.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Install the package if you haven&#39;t already</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co"># install.packages(&quot;rmsMD&quot;)</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co"># # # or for GitHub:</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># devtools::install_github(&quot;https://github.com/sjtingle/rmsMD&quot;)</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">library</span>(rms)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">library</span>(rmsMD)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="fu">library</span>(MASS)</span></code></pre></div>
+</div>
+</div>
+<div id="basic-usage" class="section level1">
+<h1>Basic Usage</h1>
+<p>Here is a simple example using a linear regression model (“ordinary
+least squares”; OLS). The example data being used here is the built-in
+survey dataset from the MASS package.</p>
+<p>The output dataframe contains the estimated coefficients, their 95%
+confidence intervals, and the associated p-values. These are in a
+publication ready format.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Loading the built-in dataset from the MASS package:</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;survey&quot;</span>, <span class="at">package =</span> <span class="st">&quot;MASS&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Fit a linear regression model using the rms package:</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>fit_ols <span class="ot">&lt;-</span> <span class="fu">ols</span>(Wr.Hnd <span class="sc">~</span> Age <span class="sc">+</span> Exer <span class="sc">+</span> Sex, <span class="at">data =</span> survey)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co"># Generate a model summary, and assign it to rmsMD_summary</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>rmsMD_summary <span class="ot">&lt;-</span> <span class="fu">modelsummary_rms</span>(fit_ols)</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co"># displaying rmsMD dataframe output</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>rmsMD_summary</span></code></pre></div>
+<pre><code>##    variable                coef_95CI Pvalue
+## 1       Age  0.011 (-0.020 to 0.042)  0.474
+## 2 Exer=None -0.112 (-0.798 to 0.574)  0.749
+## 3 Exer=Some -0.021 (-0.447 to 0.406)  0.924
+## 4  Sex=Male   2.146 (1.743 to 2.550) &lt;0.001</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># rmsMD dataframe as a table</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(rmsMD_summary)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">coef_95CI</th>
+<th align="left">Pvalue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Age</td>
+<td align="left">0.011 (-0.020 to 0.042)</td>
+<td align="left">0.474</td>
+</tr>
+<tr class="even">
+<td align="left">Exer=None</td>
+<td align="left">-0.112 (-0.798 to 0.574)</td>
+<td align="left">0.749</td>
+</tr>
+<tr class="odd">
+<td align="left">Exer=Some</td>
+<td align="left">-0.021 (-0.447 to 0.406)</td>
+<td align="left">0.924</td>
+</tr>
+<tr class="even">
+<td align="left">Sex=Male</td>
+<td align="left">2.146 (1.743 to 2.550)</td>
+<td align="left">&lt;0.001</td>
+</tr>
+</tbody>
+</table>
+<div id="customising-the-output" class="section level2">
+<h2>Customising the Output</h2>
+<p>By default, the function uses the following stylistic settings:</p>
+<ul>
+<li><strong>combine_ci = TRUE:</strong> Combines the effect estimate and
+the 95% confidence interval into a single column.</li>
+<li><strong>round_dp_coef = 3:</strong> Rounds the effect estimates to
+three decimal places.</li>
+<li><strong>round_dp_p = 3:</strong> Rounds the p-values to three
+decimal places.</li>
+</ul>
+<p>You can modify these defaults to adjust the appearance of the
+output.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Generate a model summary with custom styling options</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>summary_custom <span class="ot">&lt;-</span> <span class="fu">modelsummary_rms</span>(fit_ols, </span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>                                   <span class="at">combine_ci =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>                                   <span class="at">round_dp_coef =</span> <span class="dv">2</span>, </span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>                                   <span class="at">round_dp_p =</span> <span class="dv">5</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co"># to display the dataframe as a table</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(summary_custom)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">coef</th>
+<th align="left">coef_lower95</th>
+<th align="left">coef_upper95</th>
+<th align="left">Pvalue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Age</td>
+<td align="left">0.01</td>
+<td align="left">-0.02</td>
+<td align="left">0.04</td>
+<td align="left">0.47400</td>
+</tr>
+<tr class="even">
+<td align="left">Exer=None</td>
+<td align="left">-0.11</td>
+<td align="left">-0.80</td>
+<td align="left">0.57</td>
+<td align="left">0.74892</td>
+</tr>
+<tr class="odd">
+<td align="left">Exer=Some</td>
+<td align="left">-0.02</td>
+<td align="left">-0.45</td>
+<td align="left">0.41</td>
+<td align="left">0.92386</td>
+</tr>
+<tr class="even">
+<td align="left">Sex=Male</td>
+<td align="left">2.15</td>
+<td align="left">1.74</td>
+<td align="left">2.55</td>
+<td align="left">&lt;0.00001</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="full-model-output" class="section level2">
+<h2>Full Model Output</h2>
+<p>By default, <strong>modelsummary_rms</strong> returns only the final
+formatted summary (i.e. <code>fullmodel = FALSE</code>). This does not
+include the model intercept, or information such as standard errors.
+This output is made to be concise and show the key results.</p>
+<p>If all information is required, you can set
+<code>fullmodel = TRUE</code>.</p>
+<p>This option returns additional results.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Generate a model summary with custom styling options</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>summary_fullmodel <span class="ot">&lt;-</span> <span class="fu">modelsummary_rms</span>(fit_ols, </span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                                   <span class="at">combine_ci =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>                                   <span class="at">round_dp_coef =</span> <span class="dv">2</span>, </span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>                                   <span class="at">round_dp_p =</span> <span class="dv">5</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>                                   <span class="at">fullmodel =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(summary_fullmodel)</span></code></pre></div>
+<table>
+<colgroup>
+<col width="13%" />
+<col width="8%" />
+<col width="13%" />
+<col width="17%" />
+<col width="17%" />
+<col width="17%" />
+<col width="12%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">coef</th>
+<th align="right">SE</th>
+<th align="right">p_values_raw</th>
+<th align="left">coef_lower95</th>
+<th align="left">coef_upper95</th>
+<th align="left">Pvalue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Intercept</td>
+<td align="left">17.39</td>
+<td align="right">0.3721170</td>
+<td align="right">0.0000000</td>
+<td align="left">16.66</td>
+<td align="left">18.12</td>
+<td align="left">&lt;0.00001</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="left">0.01</td>
+<td align="right">0.0157258</td>
+<td align="right">0.4740033</td>
+<td align="left">-0.02</td>
+<td align="left">0.04</td>
+<td align="left">0.47400</td>
+</tr>
+<tr class="odd">
+<td align="left">Exer=None</td>
+<td align="left">-0.11</td>
+<td align="right">0.3498069</td>
+<td align="right">0.7489214</td>
+<td align="left">-0.80</td>
+<td align="left">0.57</td>
+<td align="left">0.74892</td>
+</tr>
+<tr class="even">
+<td align="left">Exer=Some</td>
+<td align="left">-0.02</td>
+<td align="right">0.2176646</td>
+<td align="right">0.9238556</td>
+<td align="left">-0.45</td>
+<td align="left">0.41</td>
+<td align="left">0.92386</td>
+</tr>
+<tr class="odd">
+<td align="left">Sex=Male</td>
+<td align="left">2.15</td>
+<td align="right">0.2056453</td>
+<td align="right">0.0000000</td>
+<td align="left">1.74</td>
+<td align="left">2.55</td>
+<td align="left">&lt;0.00001</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="exponential-coefficients-including-hazard-ratios-and-odds-ratios" class="section level2">
+<h2>Exponential Coefficients (including hazard ratios and odds
+ratios)</h2>
+<p>Exponentiating the coefficients of certain models makes the
+interpretation more intuitive (e.g. as odds ratios in logistic
+regression and hazard ratios in Cox models). This is controlled using
+the <code>exp_coef</code> argument.</p>
+<p>The <strong>modelsummary_rms</strong> package automatically sets an
+appropriate value for <code>exp_coef</code> for the core
+<strong>rms</strong> models <code>ols</code>, <code>lrm</code>, and
+<code>cph</code>. This ensures OR and HR are displayed for logistic
+regression and Cox regression models respectively.Below is an example
+using <strong>modelsummary_rms</strong> on an <strong>rms</strong>
+logistic regression model. Note this automatically provides OR:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Note: For demonstration, we create a binary outcome using the survey dataset.</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>survey<span class="sc">$</span>BinaryOutcome <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(survey<span class="sc">$</span>Wr.Hnd <span class="sc">&gt;</span> <span class="fu">median</span>(survey<span class="sc">$</span>Wr.Hnd, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co"># fitting the model</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>fit_lrm <span class="ot">&lt;-</span> <span class="fu">lrm</span>(BinaryOutcome <span class="sc">~</span> Age <span class="sc">+</span> Exer <span class="sc">+</span> Sex, <span class="at">data =</span> survey)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co"># rmsMD summary</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>summary_lrm <span class="ot">&lt;-</span> <span class="fu">modelsummary_rms</span>(fit_lrm)</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co"># displaying as a table</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(summary_lrm)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">OR_95CI</th>
+<th align="left">Pvalue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Age</td>
+<td align="left">1.012 (0.965 to 1.060)</td>
+<td align="left">0.626</td>
+</tr>
+<tr class="even">
+<td align="left">Exer=None</td>
+<td align="left">0.776 (0.279 to 2.160)</td>
+<td align="left">0.627</td>
+</tr>
+<tr class="odd">
+<td align="left">Exer=Some</td>
+<td align="left">0.805 (0.424 to 1.528)</td>
+<td align="left">0.507</td>
+</tr>
+<tr class="even">
+<td align="left">Sex=Male</td>
+<td align="left">9.784 (5.323 to 17.982)</td>
+<td align="left">&lt;0.001</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>modelsummary_rms</strong> from <strong>rmsMD</strong>
+package is also capable of working with non-rms models, such as those
+fitted using base R functions like lm(). However, in these cases the
+package does not automatically determine the appropriate value for
+exp_coef, so it must be set manually.</p>
+<p>For example, when using a linear model (where exponentiation of
+coefficients is not required), you should explicitly set exp_coef =
+FALSE.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Fit a simple linear model using lm() from base R (an example model fit without using rms package)</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>fit_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Wr.Hnd <span class="sc">~</span> Age <span class="sc">+</span> Exer <span class="sc">+</span> Sex, <span class="at">data =</span> survey)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co"># Generate a model summary for the non-RMS model by explicitly setting exp_coef = FALSE</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>summary_lm <span class="ot">&lt;-</span> <span class="fu">modelsummary_rms</span>(fit_lm, </span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>                               <span class="at">exp_coef =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co"># display rmsMD results as a table</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(summary_lm)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">coef_95CI</th>
+<th align="left">Pvalue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="left">17.387 (16.657 to 18.116)</td>
+<td align="left">&lt;0.001</td>
+</tr>
+<tr class="even">
+<td align="left">Age</td>
+<td align="left">0.011 (-0.020 to 0.042)</td>
+<td align="left">0.474</td>
+</tr>
+<tr class="odd">
+<td align="left">ExerNone</td>
+<td align="left">-0.112 (-0.798 to 0.574)</td>
+<td align="left">0.749</td>
+</tr>
+<tr class="even">
+<td align="left">ExerSome</td>
+<td align="left">-0.021 (-0.447 to 0.406)</td>
+<td align="left">0.924</td>
+</tr>
+<tr class="odd">
+<td align="left">SexMale</td>
+<td align="left">2.146 (1.743 to 2.550)</td>
+<td align="left">&lt;0.001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="restricted-cubic-splines" class="section level1">
+<h1>Restricted Cubic Splines</h1>
+<p>Restricted Cubic Splines (RCS) are a flexible modelling tool used to
+capture non-linear relationships between predictors and outcomes. In
+medicine, many continuous variables (e.g. age, blood pressure, or
+biomarker levels) do not have a strictly linear association with the
+outcome of interest. A key highlight of the <strong>rms</strong> package
+is the ability to analyse variables using RCS.</p>
+<p>The <strong>rmsMD</strong> package is designed to report and
+summarise models that include RCS terms. Individual coefficients for RCS
+terms are difficult to interpret in isolation. Instead, an overall
+p-value can be generated to assess whether the overall relationship
+between the RCS variable and outcome is significant. By default
+<strong>modelsummary_rms</strong> removes the individual RCS
+coefficients, replacing them with the overall p-value for that
+variable.</p>
+<ul>
+<li><p><strong>Display an overall p-value for the spline terms using the
+<code>rcs_overallp</code> option.</strong><br />
+When this option is set to <code>TRUE</code> (which is the default), the
+function computes a single p-value that tests the overall significance
+of the spline terms. This overall p-value provides insight into whether
+the relationship between the predictor and the dependent variable is
+significant.</p></li>
+<li><p><strong>Hide the individual spline coefficients using the
+<code>hide_rcs_coef</code> option.</strong><br />
+Hiding the individual spline coefficients can be advantageous because
+these lack straightforward clinical interpretation. Instead, the focus
+is on the overall association captured by all RCS terms for that
+specific variable. This helps simplify the output. If the variable has a
+signficant association with outcome, we recommend plotting this
+relationship.</p></li>
+</ul>
+<p>Example of a model with RCS terms for the continuous outcome Age. The
+default settings are applied, which hides the individual RCS terms, and
+provides an overall p-value for the association of Age with outcome.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Using the built-in dataset from the MASS package</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;survey&quot;</span>, <span class="at">package =</span> <span class="st">&quot;MASS&quot;</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co"># Fit an OLS model including a restricted cubic spline for Age (with 4 knots)</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>fit_spline <span class="ot">&lt;-</span> <span class="fu">ols</span>(Wr.Hnd <span class="sc">~</span> <span class="fu">rcs</span>(Age, <span class="dv">4</span>) <span class="sc">+</span> Exer <span class="sc">+</span> Sex, <span class="at">data =</span> survey)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co"># Generate an rmsMD model summary using default settings</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>summary_spline <span class="ot">&lt;-</span> <span class="fu">modelsummary_rms</span>(fit_spline)</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co"># Outputting this as a table</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(summary_spline)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">coef_95CI</th>
+<th align="left">Pvalue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Exer=None</td>
+<td align="left">-0.152 (-0.841 to 0.537)</td>
+<td align="left">0.665</td>
+</tr>
+<tr class="even">
+<td align="left">Exer=Some</td>
+<td align="left">-0.032 (-0.461 to 0.396)</td>
+<td align="left">0.882</td>
+</tr>
+<tr class="odd">
+<td align="left">Sex=Male</td>
+<td align="left">2.094 (1.682 to 2.506)</td>
+<td align="left">&lt;0.001</td>
+</tr>
+<tr class="even">
+<td align="left">RCSoverallP: Age</td>
+<td align="left">RCS terms</td>
+<td align="left">0.545</td>
+</tr>
+</tbody>
+</table>
+<div id="displaying-rcs-individual-coefficients" class="section level2">
+<h2>Displaying RCS individual coefficients</h2>
+<p>If individual RCS coefficients are required, these can be added in by
+setting <code>hide_rcs_coef</code> to <code>FALSE</code>:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Fit an OLS model including a restricted cubic spline for Age (with 4 knots)</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>fit_spline_hide <span class="ot">&lt;-</span> <span class="fu">ols</span>(Wr.Hnd <span class="sc">~</span> <span class="fu">rcs</span>(Age, <span class="dv">4</span>) <span class="sc">+</span> Exer <span class="sc">+</span> Sex, <span class="at">data =</span> survey)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co"># Generate a model summary with rcs_overallp set to TRUE and hide_rcs_coef set to TRUE</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>summary_spline_hide <span class="ot">&lt;-</span> <span class="fu">modelsummary_rms</span>(fit_spline_hide, </span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>                                        <span class="at">hide_rcs_coef =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co"># Outputting this as a table</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(summary_spline_hide)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">coef_95CI</th>
+<th align="left">Pvalue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Age</td>
+<td align="left">0.455 (-0.232 to 1.142)</td>
+<td align="left">0.194</td>
+</tr>
+<tr class="even">
+<td align="left">Age’</td>
+<td align="left">-14.850 (-38.835 to 9.136)</td>
+<td align="left">0.225</td>
+</tr>
+<tr class="odd">
+<td align="left">Age’’</td>
+<td align="left">26.771 (-16.692 to 70.233)</td>
+<td align="left">0.227</td>
+</tr>
+<tr class="even">
+<td align="left">Exer=None</td>
+<td align="left">-0.152 (-0.841 to 0.537)</td>
+<td align="left">0.665</td>
+</tr>
+<tr class="odd">
+<td align="left">Exer=Some</td>
+<td align="left">-0.032 (-0.461 to 0.396)</td>
+<td align="left">0.882</td>
+</tr>
+<tr class="even">
+<td align="left">Sex=Male</td>
+<td align="left">2.094 (1.682 to 2.506)</td>
+<td align="left">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td align="left">RCSoverallP: Age</td>
+<td align="left">RCS terms</td>
+<td align="left">0.545</td>
+</tr>
+</tbody>
+</table>
+<p>If overall p-values for the variables modelled with RCS are not
+wanted, <code>rcs_overallp</code> can be set to <code>FALSE</code>:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Fit an OLS model including a restricted cubic spline for Age (with 4 knots)</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>fit_spline_hide <span class="ot">&lt;-</span> <span class="fu">ols</span>(Wr.Hnd <span class="sc">~</span> <span class="fu">rcs</span>(Age, <span class="dv">4</span>) <span class="sc">+</span> Exer <span class="sc">+</span> Sex, <span class="at">data =</span> survey)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co"># Generate a model summary with rcs_overallp set to TRUE and hide_rcs_coef set to TRUE</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>summary_spline_hide <span class="ot">&lt;-</span> <span class="fu">modelsummary_rms</span>(fit_spline_hide, </span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>                                        <span class="at">rcs_overallp =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>                                        <span class="at">hide_rcs_coef =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(summary_spline_hide)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">coef_95CI</th>
+<th align="left">Pvalue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Age</td>
+<td align="left">0.455 (-0.232 to 1.142)</td>
+<td align="left">0.194</td>
+</tr>
+<tr class="even">
+<td align="left">Age’</td>
+<td align="left">-14.850 (-38.835 to 9.136)</td>
+<td align="left">0.225</td>
+</tr>
+<tr class="odd">
+<td align="left">Age’’</td>
+<td align="left">26.771 (-16.692 to 70.233)</td>
+<td align="left">0.227</td>
+</tr>
+<tr class="even">
+<td align="left">Exer=None</td>
+<td align="left">-0.152 (-0.841 to 0.537)</td>
+<td align="left">0.665</td>
+</tr>
+<tr class="odd">
+<td align="left">Exer=Some</td>
+<td align="left">-0.032 (-0.461 to 0.396)</td>
+<td align="left">0.882</td>
+</tr>
+<tr class="even">
+<td align="left">Sex=Male</td>
+<td align="left">2.094 (1.682 to 2.506)</td>
+<td align="left">&lt;0.001</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="models-with-interactions" class="section level1">
+<h1>Models with Interactions</h1>
+<p>In medical research, interactions can be critical, as the impact of a
+treatment or risk factor might differ across subgroups (for example, by
+age or sex). These interaction terms are handled by
+<strong>modelsummary_rms</strong>.</p>
+<p>Here is a simple example:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Using the built-in dataset from the MASS package</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;survey&quot;</span>, <span class="at">package =</span> <span class="st">&quot;MASS&quot;</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co"># Fit an OLS model using the rms package with an interaction between Age and Exer.</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>fit_interact <span class="ot">&lt;-</span> <span class="fu">ols</span>(Wr.Hnd <span class="sc">~</span> Age <span class="sc">*</span> Exer <span class="sc">+</span> Sex, <span class="at">data =</span> survey)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co"># Generate a model summary that includes the interaction term</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>summary_interact <span class="ot">&lt;-</span> <span class="fu">modelsummary_rms</span>(fit_interact)</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(summary_interact)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">coef_95CI</th>
+<th align="left">Pvalue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Age</td>
+<td align="left">0.025 (-0.021 to 0.071)</td>
+<td align="left">0.291</td>
+</tr>
+<tr class="even">
+<td align="left">Exer=None</td>
+<td align="left">-0.078 (-2.341 to 2.185)</td>
+<td align="left">0.946</td>
+</tr>
+<tr class="odd">
+<td align="left">Exer=Some</td>
+<td align="left">0.598 (-0.795 to 1.992)</td>
+<td align="left">0.400</td>
+</tr>
+<tr class="even">
+<td align="left">Sex=Male</td>
+<td align="left">2.142 (1.737 to 2.546)</td>
+<td align="left">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td align="left">Age * Exer=None</td>
+<td align="left">-0.002 (-0.104 to 0.099)</td>
+<td align="left">0.964</td>
+</tr>
+<tr class="even">
+<td align="left">Age * Exer=Some</td>
+<td align="left">-0.031 (-0.097 to 0.035)</td>
+<td align="left">0.360</td>
+</tr>
+</tbody>
+</table>
+<div id="interactions-with-rcs-variables" class="section level2">
+<h2>Interactions with RCS variables</h2>
+<p>The <strong>rms</strong> package allows interactions with variables
+modelled using restricted cubic splines. In this setting, the individual
+coefficients for RCS terms and their interactions are difficult to
+interpret. <strong>modelsummary_rms</strong> handles this situation by
+providing overall p-values for RCS variables (which give the overall
+p-value taking into account all spline terms and all of their
+interaction terms), and overall p-values for the interactions (takes
+into account linear and non-linear terms), instead of the individual
+coefficients. As above, this can be altered by changing
+<code>rcs_overallp</code> and <code>hide_rcs_coef</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Using the built-in dataset from the MASS package</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;survey&quot;</span>, <span class="at">package =</span> <span class="st">&quot;MASS&quot;</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co"># Fit an OLS model with a restricted cubic spline for Age and an interaction between Age and Exer.</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>fit_spline_interact <span class="ot">&lt;-</span> <span class="fu">ols</span>(Wr.Hnd <span class="sc">~</span> <span class="fu">rcs</span>(Age, <span class="dv">4</span>) <span class="sc">*</span> Exer <span class="sc">+</span> Sex, <span class="at">data =</span> survey)</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="co"># Generate a model summary with default RCS output</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>summary_spline_interact <span class="ot">&lt;-</span> <span class="fu">modelsummary_rms</span>(fit_spline_interact)</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="co"># Format the output as a nice table</span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(summary_spline_interact)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">coef_95CI</th>
+<th align="left">Pvalue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Exer=None</td>
+<td align="left">-3.885 (-50.286 to 42.515)</td>
+<td align="left">0.870</td>
+</tr>
+<tr class="even">
+<td align="left">Exer=Some</td>
+<td align="left">23.159 (-1.786 to 48.104)</td>
+<td align="left">0.069</td>
+</tr>
+<tr class="odd">
+<td align="left">Sex=Male</td>
+<td align="left">2.120 (1.705 to 2.536)</td>
+<td align="left">&lt;0.001</td>
+</tr>
+<tr class="even">
+<td align="left">RCSoverallP: Age</td>
+<td align="left">RCS terms</td>
+<td align="left">0.352</td>
+</tr>
+<tr class="odd">
+<td align="left">RCSoverallP: Age * Exer</td>
+<td align="left">RCS terms</td>
+<td align="left">0.251</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="exporting-to-microsoft-word" class="section level1">
+<h1>Exporting to Microsoft Word</h1>
+<p>The output of <strong>modelsummary_rms</strong> is a dataframe, as
+this is easy to work with and further process if required. This
+dataframe output can easily be exported to a word document using
+<strong>flextable</strong> and <strong>officer</strong> packages.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">library</span>(officer)</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">library</span>(flextable)</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co"># converting modelsummary_rms dataframe generated above into a flextable</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>rmsMD_as_table <span class="ot">&lt;-</span> <span class="fu">flextable</span>(rmsMD_summary)</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co"># use officer to create a </span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>doc <span class="ot">&lt;-</span> <span class="fu">read_docx</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>  <span class="fu">body_add_flextable</span>(rmsMD_as_table) <span class="sc">%&gt;%</span></span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>  <span class="fu">body_add_par</span>(<span class="st">&quot;Model summary from rmsMD&quot;</span>, <span class="at">style =</span> <span class="st">&quot;heading 2&quot;</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="co"># generating a temporary output path for demonstration. This would be replaced by the file path where the word document will be generated</span></span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a>output_path <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="st">&quot;example_output.docx&quot;</span>)</span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a><span class="co"># generating the word document</span></span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a><span class="fu">print</span>(doc, <span class="at">target =</span> output_path)</span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a></span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a><span class="fu">print</span>(doc, <span class="at">target =</span> <span class="st">&quot;temp.docx&quot;</span>)</span></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
