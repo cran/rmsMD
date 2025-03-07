@@ -1,7 +1,8 @@
 Package: rmsMD
 Type: Package
 Title: Output Results from 'rms' Models for Medical Journals
-Version: 0.1.1
+Version: 0.1.2
+Date: 2025-03-03
 Description: This takes the output of models performed using the 'rms' package and
     returns a dataframe with the results. This output is in the format required by medical
     journals. For example for cox regression models, the hazard ratios, their 95%
@@ -23,9 +24,9 @@ Suggests: knitr, rmarkdown, devtools, officer, flextable, dplyr, MASS,
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2025-02-27 10:00:53 UTC; samueltingle
+Packaged: 2025-03-07 11:18:21 UTC; samueltingle
 Author: Samuel Tingle [aut, cre],
   Georgios Kourounis [aut]
 Maintainer: Samuel Tingle <samjamestingle@gmail.com>
 Repository: CRAN
-Date/Publication: 2025-03-03 11:30:04 UTC
+Date/Publication: 2025-03-07 11:50:02 UTC

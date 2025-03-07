@@ -2,13 +2,8 @@
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 ## -----------------------------------------------------------------------------
-devtools::load_all()
-
-## -----------------------------------------------------------------------------
 # Install the package if you haven't already
 # install.packages("rmsMD")
-# # # or for GitHub:
-# devtools::install_github("https://github.com/sjtingle/rmsMD")
 
 library(rms)
 library(rmsMD)
