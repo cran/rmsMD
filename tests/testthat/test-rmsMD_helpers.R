@@ -1,147 +1,207 @@
-# test_that("multiplication works", {
-#   expect_equal(2 * 2, 4)
-# })
-
 library(testthat)
-library(MASS)
 library(rms)
-library(survival)
+
+# Generate a simulated dataset using the helper function from the package.
+data <- simulated_rmsMD_data()
 
 
-# Test for rmsMD_extract_coef_and_se:
-# This test fits an ols model and extracts coefficients and standard errors,
-# then compares them to the expected values computed directly from the model.
-test_that("rmsMD_extract_coef_and_se returns correct values", {
-  data("Boston", package = "MASS")
+prepare_output_df <- function(modelfit) {
+  coef_vals <- coef(modelfit)
+  se_vals <- sqrt(diag(vcov(modelfit)))
+  se_vals <- se_vals[names(coef_vals)]
 
-  # Fit an ols model on the Boston data.
-  modelfit <- ols(medv ~ lstat, data = Boston)
-  ext <- rmsMD_extract_coef_and_se(modelfit)
+  lower95 <- coef_vals + qnorm(0.025) * se_vals
+  upper95 <- coef_vals + qnorm(0.975) * se_vals
 
-  # Expected coefficients and standard errors from the model.
-  expected_coef <- coef(modelfit)
-  expected_se <- sqrt(diag(vcov(modelfit)))[names(expected_coef)]
+  coef_95CI <- paste0(
+    format(coef_vals, digits = 3), " (",
+    format(lower95, digits = 3), " to ",
+    format(upper95, digits = 3), ")"
+  )
+  exp_coef_95CI <- paste0(
+    format(exp(coef_vals), digits = 3), " (",
+    format(exp(lower95), digits = 3), " to ",
+    format(exp(upper95), digits = 3), ")"
+  )
 
-  # Verify that the helper returns the same coefficients and standard errors.
-  expect_identical(ext$coef, expected_coef)
-  expect_identical(ext$se, expected_se)
-})
+  Pvalue <- 2 * (1 - pnorm(abs(coef_vals / se_vals)))
 
-# Test for rmsMD_prepare_output_dataframe:
-# This test ensures that the data frame created by the helper function contains
-# the correct column names and the values match those of the extracted coefficients and SEs.
-test_that("rmsMD_prepare_output_dataframe creates proper dataframe", {
-  data("Boston", package = "MASS")
+  data.frame(
+    variable = names(coef_vals),
+    coef_95CI = coef_95CI,
+    exp_coef_95CI = exp_coef_95CI,
+    coef = coef_vals,
+    coef_lower95 = lower95,
+    coef_upper95 = upper95,
+    Pvalue = Pvalue,
+    stringsAsFactors = FALSE
+  )
+}
 
-  modelfit <- ols(medv ~ lstat, data = Boston)
-  ext <- rmsMD_extract_coef_and_se(modelfit)
-  df <- rmsMD_prepare_output_dataframe(ext$coef, ext$se)
+key_vars <- c("coef", "coef_lower95", "coef_upper95")
 
-  # Check for expected column names.
-  expect_true(all(c("variable", "coef", "SE") %in% colnames(df)))
-  # Remove names for numeric comparison, since the data frame might not preserve names.
-  expect_identical(unname(df$coef), unname(ext$coef))
-  expect_identical(unname(df$SE), unname(ext$se))
-})
 
-# Test for rmsMD_calculate_raw_p_values:
-# This test confirms that raw p-values are computed correctly using the standard formula.
-test_that("rmsMD_calculate_raw_p_values computes correct p-values", {
-  data("Boston", package = "MASS")
+# Wrap your tests in a function that accepts data as input
+run_all_rmsMD_tests <- function(data, data_description = "complete") {
 
-  modelfit <- ols(medv ~ lstat, data = Boston)
-  ext <- rmsMD_extract_coef_and_se(modelfit)
-  df <- rmsMD_prepare_output_dataframe(ext$coef, ext$se)
-  df <- rmsMD_calculate_raw_p_values(df)
+  ### OLS Model Tests ###
+  ols_fit <- ols(lengthstay ~ age + bmi + sex + smoking + majorcomplication, data = data)
+  output_df_ols <- prepare_output_df(ols_fit)
 
-  # Expected raw p-values using the formula 2 * (1 - pnorm(|coef/SE|)).
-  expected_p <- 2 * (1 - pnorm(abs(df$coef / df$SE)))
-  expect_identical(df$p_values_raw, expected_p)
-})
+  test_that(paste("OLS:", data_description, "- combine_ci=TRUE, exp_coef=FALSE excludes intercept and returns correct columns"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_ols,
+      fullmodel = FALSE,
+      combine_ci = TRUE,
+      exp_coef = FALSE,
+      key_vars = key_vars
+    )
+    expect_identical(colnames(res), c("variable", "coef_95CI", "Pvalue"))
+    expect_false("Intercept" %in% res$variable)
+  })
 
-# Test for rmsMD_calculate_coef_confidence_intervals:
-# This test ensures that the 95% confidence intervals for each coefficient are computed correctly.
-test_that("rmsMD_calculate_coef_confidence_intervals adds correct CI columns", {
-  data("Boston", package = "MASS")
+  test_that(paste("OLS:", data_description, "- combine_ci=TRUE, exp_coef=TRUE returns exponentiated CIs"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_ols,
+      fullmodel = FALSE,
+      combine_ci = TRUE,
+      exp_coef = TRUE,
+      key_vars = key_vars
+    )
+    expect_identical(colnames(res), c("variable", "exp_coef_95CI", "Pvalue"))
+  })
 
-  modelfit <- ols(medv ~ lstat, data = Boston)
-  ext <- rmsMD_extract_coef_and_se(modelfit)
-  df <- rmsMD_prepare_output_dataframe(ext$coef, ext$se)
-  df <- rmsMD_calculate_coef_confidence_intervals(df)
+  test_that(paste("OLS:", data_description, "- combine_ci=FALSE returns raw coefficients with p-values"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_ols,
+      fullmodel = FALSE,
+      combine_ci = FALSE,
+      exp_coef = FALSE,
+      key_vars = key_vars
+    )
+    expect_identical(colnames(res), c("variable", key_vars, "Pvalue"))
+  })
 
-  # Expected lower and upper bounds using qnorm for 2.5% and 97.5% quantiles.
-  lower_expected <- df$coef + qnorm(0.025) * df$SE
-  upper_expected <- df$coef + qnorm(0.975) * df$SE
+  test_that(paste("OLS:", data_description, "- fullmodel=TRUE returns full unfiltered output_df"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_ols,
+      fullmodel = TRUE,
+      combine_ci = TRUE,
+      exp_coef = FALSE,
+      key_vars = key_vars
+    )
+    expect_identical(res, output_df_ols)
+  })
 
-  expect_identical(df$coef_lower95, lower_expected)
-  expect_identical(df$coef_upper95, upper_expected)
-})
 
-# Test for rmsMD_format_column_output:
-# This test checks that numeric values are correctly rounded to the specified number of decimal places.
-test_that("rmsMD_format_column_output rounds numeric values correctly", {
-  data("Boston", package = "MASS")
+  ### Logistic Regression Model Tests ###
+  lrm_fit <- lrm(majorcomplication ~ age + bmi + sex + smoking, data = data)
+  output_df_log <- prepare_output_df(lrm_fit)
 
-  modelfit <- ols(medv ~ lstat, data = Boston)
-  ext <- rmsMD_extract_coef_and_se(modelfit)
-  df <- rmsMD_prepare_output_dataframe(ext$coef, ext$se)
-  df_formatted <- rmsMD_format_column_output(df, vars = "coef", round_dp_coef = 3)
+  test_that(paste("Logistic:", data_description, "- combine_ci=TRUE, exp_coef=FALSE excludes intercept and returns correct columns"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_log,
+      fullmodel = FALSE,
+      combine_ci = TRUE,
+      exp_coef = FALSE,
+      key_vars = key_vars
+    )
+    expect_identical(colnames(res), c("variable", "coef_95CI", "Pvalue"))
+    expect_false("Intercept" %in% res$variable)
+  })
 
-  # For the first coefficient, check that the value is rounded as expected.
-  expected_value <- sprintf("%.3f", df$coef[1])
-  expect_identical(df_formatted$coef[1], expected_value)
-})
+  test_that(paste("Logistic:", data_description, "- combine_ci=TRUE, exp_coef=TRUE returns exponentiated CIs"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_log,
+      fullmodel = FALSE,
+      combine_ci = TRUE,
+      exp_coef = TRUE,
+      key_vars = key_vars
+    )
+    expect_identical(colnames(res), c("variable", "exp_coef_95CI", "Pvalue"))
+  })
 
-# Test for rmsMD_combine_CI_for_output:
-# This test verifies that the confidence intervals are combined into a single string column
-# that follows the expected format (e.g., "number (number to number)").
-test_that("rmsMD_combine_CI_for_output creates combined CI column correctly", {
-  data("Boston", package = "MASS")
+  test_that(paste("Logistic:", data_description, "- combine_ci=FALSE returns raw coefficients with p-values"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_log,
+      fullmodel = FALSE,
+      combine_ci = FALSE,
+      exp_coef = FALSE,
+      key_vars = key_vars
+    )
+    expect_identical(colnames(res), c("variable", key_vars, "Pvalue"))
+  })
 
-  modelfit <- ols(medv ~ lstat, data = Boston)
-  ext <- rmsMD_extract_coef_and_se(modelfit)
-  df <- rmsMD_prepare_output_dataframe(ext$coef, ext$se)
-  df <- rmsMD_calculate_coef_confidence_intervals(df)
-  key_vars <- c("coef", "coef_lower95", "coef_upper95")
-  df <- rmsMD_format_column_output(df, vars = key_vars, round_dp_coef = 3)
-  df <- rmsMD_combine_CI_for_output(df, key_vars)
+  test_that(paste("Logistic:", data_description, "- fullmodel=TRUE returns full unfiltered output_df"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_log,
+      fullmodel = TRUE,
+      combine_ci = TRUE,
+      exp_coef = FALSE,
+      key_vars = key_vars
+    )
+    expect_identical(res, output_df_log)
+  })
 
-  # The combined column should be named "coef_95CI" when exp_coef is FALSE.
-  combined_column <- paste0("coef_95CI")
-  # Check that the first element of the combined column matches a pattern like "number (number to number)".
-  expect_match(df[[combined_column]][1],
-               "^-?[0-9]+\\.?[0-9]* \\(-?[0-9]+\\.?[0-9]* to -?[0-9]+\\.?[0-9]*\\)$")
-})
 
-# Test for rmsMD_format_final_output:
-# This test ensures that the final formatted output returns the correct columns.
-# When fullmodel is FALSE, it should remove the intercept and only include specified columns.
-# When fullmodel is TRUE, all rows are returned.
-test_that("rmsMD_format_final_output returns correct columns", {
-  data("Boston", package = "MASS")
+  ### Cox Proportional Hazards Model Tests ###
+  cph_fit <- cph(
+    formula = Surv(time, event) ~ age + bmi + sex + smoking,
+    data = data,
+    x = TRUE,
+    y = TRUE,
+    surv = TRUE
+  )
+  output_df_cox <- prepare_output_df(cph_fit)
 
-  modelfit <- ols(medv ~ lstat, data = Boston)
-  ext <- rmsMD_extract_coef_and_se(modelfit)
-  df <- rmsMD_prepare_output_dataframe(ext$coef, ext$se)
-  df <- rmsMD_calculate_raw_p_values(df)
-  df <- rmsMD_calculate_coef_confidence_intervals(df)
-  df <- rmsMD_format_column_output(df, vars = c("coef", "coef_lower95", "coef_upper95"), round_dp_coef = 3)
-  df <- rmsMD_combine_CI_for_output(df, c("coef", "coef_lower95", "coef_upper95"))
+  test_that(paste("Cox:", data_description, "- combine_ci=TRUE, exp_coef=FALSE excludes intercept and returns correct columns"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_cox,
+      fullmodel = FALSE,
+      combine_ci = TRUE,
+      exp_coef = FALSE,
+      key_vars = key_vars
+    )
+    expect_identical(colnames(res), c("variable", "coef_95CI", "Pvalue"))
+    expect_false("Intercept" %in% res$variable)
+  })
 
-  # Add a dummy Pvalue column so that final formatting can select it.
-  df$Pvalue <- "0.05"
+  test_that(paste("Cox:", data_description, "- combine_ci=TRUE, exp_coef=TRUE returns exponentiated CIs"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_cox,
+      fullmodel = FALSE,
+      combine_ci = TRUE,
+      exp_coef = TRUE,
+      key_vars = key_vars
+    )
+    expect_identical(colnames(res), c("variable", "exp_coef_95CI", "Pvalue"))
+  })
 
-  # When fullmodel is FALSE, the intercept should be removed and only selected columns returned.
-  final_output <- rmsMD_format_final_output(df, fullmodel = FALSE, combine_ci = TRUE, exp_coef = FALSE,
-                                            key_vars = c("coef", "coef_lower95", "coef_upper95"))
-  # Verify the intercept is removed.
-  expect_false("Intercept" %in% final_output$variable)
-  # Check that the returned column names match the expected subset.
-  expect_identical(colnames(final_output), c("variable", "coef_95CI", "Pvalue"))
+  test_that(paste("Cox:", data_description, "- combine_ci=FALSE returns raw coefficients with p-values"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_cox,
+      fullmodel = FALSE,
+      combine_ci = FALSE,
+      exp_coef = FALSE,
+      key_vars = key_vars
+    )
+    expect_identical(colnames(res), c("variable", key_vars, "Pvalue"))
+  })
 
-  # When fullmodel is TRUE, all rows should be returned.
-  final_output_full <- rmsMD_format_final_output(df, fullmodel = TRUE, combine_ci = TRUE, exp_coef = FALSE,
-                                                 key_vars = c("coef", "coef_lower95", "coef_upper95"))
-  expect_identical(nrow(final_output_full), nrow(df))
-})
+  test_that(paste("Cox:", data_description, "- fullmodel=TRUE returns full unfiltered output_df"), {
+    res <- rmsMD_format_final_output(
+      output_df = output_df_cox,
+      fullmodel = TRUE,
+      combine_ci = TRUE,
+      exp_coef = FALSE,
+      key_vars = key_vars
+    )
+    expect_identical(res, output_df_cox)
+  })
+}
 
+# Run tests on complete data (no missing)
+run_all_rmsMD_tests(simulated_rmsMD_data(type = "complete_case"), data_description = "complete data")
+
+# Run tests on incomplete data (with missingness)
+run_all_rmsMD_tests(simulated_rmsMD_data(type = "missing_for_MI"), data_description = "incomplete data")
